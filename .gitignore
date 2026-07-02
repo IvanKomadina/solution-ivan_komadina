@@ -6,6 +6,9 @@ obj/
 .vs/
 appsettings.Development.json
 *.env
+*.db
+*.sqlite
+*.sqlite3
 
 # --- Node / Frontend ---
 node_modules/

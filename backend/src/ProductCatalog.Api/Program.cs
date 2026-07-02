@@ -1,23 +1,44 @@
+using ProductCatalog.Application.Products;
+using ProductCatalog.Infrastructure.DummyJson;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<DummyJsonOptions>(builder.Configuration.GetSection(DummyJsonOptions.SectionName));
+
+builder.Services.AddHttpClient<IProductSource, DummyJsonProductSource>((sp, client) =>
+{
+	var options = builder.Configuration.GetSection(DummyJsonOptions.SectionName).Get<DummyJsonOptions>()
+		?? new DummyJsonOptions();
+	client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+});
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("Frontend", policy =>
+	{
+		policy.WithOrigins(allowedOrigins)
+			  .AllowAnyHeader()
+			  .AllowAnyMethod();
+	});
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("Frontend");
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
