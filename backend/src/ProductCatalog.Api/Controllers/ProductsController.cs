@@ -29,4 +29,18 @@ public class ProductsController : ControllerBase
 
 		return Ok(result);
 	}
+
+	/// Returns details for a single product by id.
+	[HttpGet("{id:int}")]
+	public async Task<IActionResult> GetProductById(int id, CancellationToken cancellationToken)
+	{
+		var product = await _productSource.GetProductByIdAsync(id, cancellationToken);
+
+		if (product is null)
+		{
+			return NotFound();
+		}
+
+		return Ok(product);
+	}
 }

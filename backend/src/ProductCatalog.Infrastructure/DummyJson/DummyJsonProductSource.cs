@@ -39,6 +39,25 @@ public class DummyJsonProductSource : IProductSource
 		};
 	}
 
+	public async Task<ProductDetailDto?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
+	{
+		_logger.LogInformation("Fetching product {ProductId} from DummyJSON", id);
+
+		var response = await _httpClient.GetAsync($"products/{id}", cancellationToken);
+
+		if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+		{
+			_logger.LogWarning("Product {ProductId} not found in DummyJSON", id);
+			return null;
+		}
+
+		response.EnsureSuccessStatusCode();
+
+		var product = await response.Content.ReadFromJsonAsync<DummyJsonProductDto>(cancellationToken: cancellationToken);
+
+		return product is null ? null : MapToDetail(product);
+	}
+
 	private static ProductListItemDto MapToListItem(DummyJsonProductDto product)
 	{
 		return new ProductListItemDto
@@ -48,6 +67,23 @@ public class DummyJsonProductSource : IProductSource
 			Thumbnail = product.Thumbnail,
 			Price = product.Price,
 			ShortDescription = Truncate(product.Description, 100)
+		};
+	}
+
+	private static ProductDetailDto MapToDetail(DummyJsonProductDto product)
+	{
+		return new ProductDetailDto
+		{
+			Id = product.Id,
+			Title = product.Title,
+			Description = product.Description,
+			Category = product.Category,
+			Price = product.Price,
+			Rating = product.Rating,
+			Stock = product.Stock,
+			Brand = product.Brand,
+			Thumbnail = product.Thumbnail,
+			Images = product.Images
 		};
 	}
 
