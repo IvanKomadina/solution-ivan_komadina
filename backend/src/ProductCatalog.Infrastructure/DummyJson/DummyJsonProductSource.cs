@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using ProductCatalog.Application.Common;
 using ProductCatalog.Application.Products;
@@ -25,37 +26,53 @@ public class DummyJsonProductSource : IProductSource
 
 		_logger.LogInformation("Fetching products from DummyJSON: {Url}", url);
 
-		var response = await _httpClient.GetFromJsonAsync<DummyJsonProductListResponseDto>(url, cancellationToken)
-			?? new DummyJsonProductListResponseDto();
-
-		var items = response.Products.Select(MapToListItem).ToList();
-
-		return new PagedResult<ProductListItemDto>
+		try
 		{
-			Items = items,
-			Page = query.Page,
-			PageSize = query.PageSize,
-			TotalCount = response.Total
-		};
+			var response = await _httpClient.GetFromJsonAsync<DummyJsonProductListResponseDto>(url, cancellationToken)
+				?? new DummyJsonProductListResponseDto();
+
+			var items = response.Products.Select(MapToListItem).ToList();
+
+			return new PagedResult<ProductListItemDto>
+			{
+				Items = items,
+				Page = query.Page,
+				PageSize = query.PageSize,
+				TotalCount = response.Total
+			};
+		}
+		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		{
+			_logger.LogError(ex, "Failed to fetch product list from DummyJSON ({Url})", url);
+			throw new ProductSourceUnavailableException("Unable to retrieve products from the external product source.", ex);
+		}
 	}
 
 	public async Task<ProductDetailDto?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
 		_logger.LogInformation("Fetching product {ProductId} from DummyJSON", id);
 
-		var response = await _httpClient.GetAsync($"products/{id}", cancellationToken);
-
-		if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+		try
 		{
-			_logger.LogWarning("Product {ProductId} not found in DummyJSON", id);
-			return null;
+			var response = await _httpClient.GetAsync($"products/{id}", cancellationToken);
+
+			if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+			{
+				_logger.LogWarning("Product {ProductId} not found in DummyJSON", id);
+				return null;
+			}
+
+			response.EnsureSuccessStatusCode();
+
+			var product = await response.Content.ReadFromJsonAsync<DummyJsonProductDto>(cancellationToken: cancellationToken);
+
+			return product is null ? null : MapToDetail(product);
 		}
-
-		response.EnsureSuccessStatusCode();
-
-		var product = await response.Content.ReadFromJsonAsync<DummyJsonProductDto>(cancellationToken: cancellationToken);
-
-		return product is null ? null : MapToDetail(product);
+		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		{
+			_logger.LogError(ex, "Failed to fetch product {ProductId} from DummyJSON", id);
+			throw new ProductSourceUnavailableException($"Unable to retrieve product {id} from the external product source.", ex);
+		}
 	}
 
 	private static ProductListItemDto MapToListItem(DummyJsonProductDto product)
