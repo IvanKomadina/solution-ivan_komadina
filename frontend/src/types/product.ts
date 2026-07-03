@@ -13,3 +13,16 @@ export interface PagedResult<T> {
   totalCount: number
   totalPages: number
 }
+
+export interface ProductDetail {
+  id: number
+  title: string
+  description: string
+  category: string
+  price: number
+  rating: number
+  stock: number
+  brand: string
+  thumbnail: string
+  images: string[]
+}
