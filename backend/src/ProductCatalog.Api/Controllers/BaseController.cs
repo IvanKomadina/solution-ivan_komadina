@@ -6,7 +6,7 @@ namespace ProductCatalog.Api.Controllers;
 [ApiController]
 public abstract class BaseController : ControllerBase
 {
-	protected ActionResult<T> HandleResponse<T>(ServiceResponse<T> response)
+	protected ActionResult<ServiceResponse<T>> HandleResponse<T>(ServiceResponse<T> response)
 	{
 		if (response is null)
 		{
@@ -16,7 +16,7 @@ public abstract class BaseController : ControllerBase
 		return StatusCode(response.StatusCode, response);
 	}
 
-	protected ActionResult<TResult> HandleResponse<T, TResult>(
+	protected ActionResult<ServiceResponse<TResult>> HandleResponse<T, TResult>(
 		ServiceResponse<T> response,
 		Func<T, TResult> transform)
 	{
@@ -27,11 +27,11 @@ public abstract class BaseController : ControllerBase
 
 		if (!response.Success)
 		{
-			return StatusCode(response.StatusCode, response);
+			return StatusCode(response.StatusCode, ServiceResponse<TResult>.Fail(response.Message ?? string.Empty, response.StatusCode));
 		}
 
 		var newData = transform(response.Data!);
 		var shaped = ServiceResponse<TResult>.Ok(newData, response.Message, response.StatusCode);
-		return StatusCode(response.StatusCode, shaped);
+		return StatusCode(shaped.StatusCode, shaped);
 	}
 }

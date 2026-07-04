@@ -19,7 +19,7 @@ public class ProductsController : BaseController
 	/// Returns a paginated list of products (image, name, price, shortened description).
 	/// </summary>
 	[HttpGet]
-	public async Task<ActionResult<PagedResult<ProductListItemDto>>> GetProducts(
+	public async Task<ActionResult<ServiceResponse<PagedResult<ProductListItemDto>>>> GetProducts(
 		[FromQuery] int page = 1,
 		[FromQuery] int pageSize = 12,
 		[FromQuery] string? category = null,
@@ -55,7 +55,7 @@ public class ProductsController : BaseController
 	/// Returns full details for a single product by id.
 	/// </summary>
 	[HttpGet("{id:int}")]
-	public async Task<ActionResult<ProductDetailDto>> GetProductById(int id, CancellationToken cancellationToken = default)
+	public async Task<ActionResult<ServiceResponse<ProductDetailDto>>> GetProductById(int id, CancellationToken cancellationToken = default)
 	{
 		var response = await _productSource.GetProductByIdAsync(id, cancellationToken);
 		return HandleResponse(response);
@@ -65,7 +65,7 @@ public class ProductsController : BaseController
 	/// Returns the list of product categories.
 	/// </summary>
 	[HttpGet("categories")]
-	public async Task<ActionResult<List<string>>> GetCategories(CancellationToken cancellationToken)
+	public async Task<ActionResult<ServiceResponse<List<string>>>> GetCategories(CancellationToken cancellationToken)
 	{
 		var response = await _productSource.GetCategoriesAsync(cancellationToken);
 		return HandleResponse(response);
