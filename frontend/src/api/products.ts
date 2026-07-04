@@ -7,6 +7,7 @@ export function getProducts(page: number, pageSize: number, filters: ProductFilt
   if (filters.category) params.set('category', filters.category)
   if (filters.minPrice !== undefined) params.set('minPrice', String(filters.minPrice))
   if (filters.maxPrice !== undefined) params.set('maxPrice', String(filters.maxPrice))
+  if (filters.searchTerm) params.set('search', filters.searchTerm)
 
   return apiGet<PagedResult<ProductListItem>>(`/products?${params.toString()}`)
 }

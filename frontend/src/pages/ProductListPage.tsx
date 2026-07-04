@@ -15,6 +15,7 @@ export function ProductListPage() {
     category: searchParams.get('category') ?? undefined,
     minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
     maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+    searchTerm: searchParams.get('search') ?? undefined,
   }
 
   const [data, setData] = useState<PagedResult<ProductListItem> | null>(null)
@@ -41,8 +42,8 @@ export function ProductListPage() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filters.category, filters.minPrice, filters.maxPrice])
-
+  }, [page, filters.category, filters.minPrice, filters.maxPrice, filters.searchTerm])
+  
   function updateFilters(newFilters: ProductFilters) {
     const params = new URLSearchParams()
     params.set('page', '1') // reset to page 1 whenever filters change
@@ -50,7 +51,7 @@ export function ProductListPage() {
     if (newFilters.category) params.set('category', newFilters.category)
     if (newFilters.minPrice !== undefined) params.set('minPrice', String(newFilters.minPrice))
     if (newFilters.maxPrice !== undefined) params.set('maxPrice', String(newFilters.maxPrice))
-
+    if (newFilters.searchTerm) params.set('search', newFilters.searchTerm)
     setSearchParams(params)
   }
 

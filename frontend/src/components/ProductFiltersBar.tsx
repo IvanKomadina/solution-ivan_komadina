@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCategories } from '../api/products'
+import { useDebounce } from '../hooks/useDebounce'
 import type { ProductFilters } from '../types/product'
 
 interface Props {
@@ -11,12 +12,24 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
   const [categories, setCategories] = useState<string[]>([])
   const [minPriceInput, setMinPriceInput] = useState(filters.minPrice?.toString() ?? '')
   const [maxPriceInput, setMaxPriceInput] = useState(filters.maxPrice?.toString() ?? '')
+  const [searchInput, setSearchInput] = useState(filters.searchTerm ?? '')
+  const debouncedSearch = useDebounce(searchInput, 400)
 
   useEffect(() => {
     getCategories()
       .then(setCategories)
       .catch(() => setCategories([]))
   }, [])
+
+  // Keep local input in sync if filters change externally (e.g. "Clear filters", browser back/forward)
+  useEffect(() => {
+    setSearchInput(filters.searchTerm ?? '')
+  }, [filters.searchTerm])
+
+  useEffect(() => {
+    if (debouncedSearch === (filters.searchTerm ?? '')) return
+    onChange({ ...filters, searchTerm: debouncedSearch || undefined })
+  }, [debouncedSearch])
 
   function handleCategoryChange(category: string) {
     onChange({ ...filters, category: category || undefined })
@@ -32,8 +45,23 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
     onChange({ ...filters, maxPrice: Number.isNaN(parsed) ? undefined : parsed })
   }
 
+  const hasActiveFilters =
+    filters.category || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.searchTerm
+
   return (
     <div className="flex flex-wrap gap-3 items-end mb-4">
+      <div className="flex flex-col gap-1">
+        <label htmlFor="search" className="text-xs text-gray-500">Search</label>
+        <input
+          id="search"
+          type="text"
+          placeholder="Search by name..."
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-48"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+      </div>
+
       <div className="flex flex-col gap-1">
         <label htmlFor="category" className="text-xs text-gray-500">Category</label>
         <select
@@ -75,12 +103,13 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
         />
       </div>
 
-      {(filters.category || filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
+      {hasActiveFilters && (
         <button
           className="text-sm text-blue-600 hover:underline"
           onClick={() => {
             setMinPriceInput('')
             setMaxPriceInput('')
+            setSearchInput('')
             onChange({})
           }}
         >

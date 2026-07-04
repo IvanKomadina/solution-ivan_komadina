@@ -31,4 +31,5 @@ export interface ProductFilters {
   category?: string
   minPrice?: number
   maxPrice?: number
+  searchTerm?: string
 }
