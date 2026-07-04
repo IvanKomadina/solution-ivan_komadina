@@ -21,8 +21,8 @@ public class DummyJsonProductSource : IProductSource
 
 	public async Task<PagedResult<ProductListItemDto>> GetProductsAsync(ProductQuery query, CancellationToken cancellationToken = default)
 	{
-		var skip = (query.Page - 1) * query.PageSize;
-		var url = $"products?limit={query.PageSize}&skip={skip}";
+		var hasPriceFilter = query.MinPrice.HasValue || query.MaxPrice.HasValue;
+		var url = BuildUrl(query, hasPriceFilter);
 
 		_logger.LogInformation("Fetching products from DummyJSON: {Url}", url);
 
@@ -31,11 +31,41 @@ public class DummyJsonProductSource : IProductSource
 			var response = await _httpClient.GetFromJsonAsync<DummyJsonProductListResponseDto>(url, cancellationToken)
 				?? new DummyJsonProductListResponseDto();
 
-			var items = response.Products.Select(MapToListItem).ToList();
+			IEnumerable<DummyJsonProductDto> products = response.Products;
+
+			if (hasPriceFilter)
+			{
+				products = products.Where(p =>
+					(!query.MinPrice.HasValue || p.Price >= query.MinPrice.Value) &&
+					(!query.MaxPrice.HasValue || p.Price <= query.MaxPrice.Value));
+			}
+
+			var filteredList = products.ToList();
+
+
+			// If query has price filters, we need to manually paginate the results since
+			// DummyJSON does not support server-side filtering by price.
+			if (hasPriceFilter)
+			{
+				var totalCount = filteredList.Count;
+				var pageItems = filteredList
+					.Skip((query.Page - 1) * query.PageSize)
+					.Take(query.PageSize)
+					.Select(MapToListItem)
+					.ToList();
+
+				return new PagedResult<ProductListItemDto>
+				{
+					Items = pageItems,
+					Page = query.Page,
+					PageSize = query.PageSize,
+					TotalCount = totalCount
+				};
+			}
 
 			return new PagedResult<ProductListItemDto>
 			{
-				Items = items,
+				Items = filteredList.Select(MapToListItem).ToList(),
 				Page = query.Page,
 				PageSize = query.PageSize,
 				TotalCount = response.Total
@@ -72,6 +102,24 @@ public class DummyJsonProductSource : IProductSource
 		{
 			_logger.LogError(ex, "Failed to fetch product {ProductId} from DummyJSON", id);
 			throw new ProductSourceUnavailableException($"Unable to retrieve product {id} from the external product source.", ex);
+		}
+	}
+
+	public async Task<List<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+	{
+		_logger.LogInformation("Fetching categories from DummyJSON");
+
+		try
+		{
+			var categories = await _httpClient.GetFromJsonAsync<List<DummyJsonCategoryDto>>("products/categories", cancellationToken)
+				?? new List<DummyJsonCategoryDto>();
+
+			return categories.Select(c => c.Slug).ToList();
+		}
+		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		{
+			_logger.LogError(ex, "Failed to fetch categories from DummyJSON");
+			throw new ProductSourceUnavailableException("Unable to retrieve categories from the external product source.", ex);
 		}
 	}
 
@@ -112,5 +160,24 @@ public class DummyJsonProductSource : IProductSource
 		}
 
 		return text[..(maxLength - 3)].TrimEnd() + "...";
+	}
+
+	private static string BuildUrl(ProductQuery query, bool hasPriceFilter)
+	{
+		var skip = (query.Page - 1) * query.PageSize;
+
+		if (!string.IsNullOrWhiteSpace(query.Category))
+		{
+			var category = Uri.EscapeDataString(query.Category);
+
+			return $"products/category/{category}?limit={query.PageSize}&skip={skip}";
+		}
+
+		if (hasPriceFilter)
+		{
+			return "products?limit=0";
+		}
+
+		return $"products?limit={query.PageSize}&skip={skip}";
 	}
 }

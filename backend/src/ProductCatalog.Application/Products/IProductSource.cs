@@ -7,4 +7,5 @@ public interface IProductSource
 {
 	Task<PagedResult<ProductListItemDto>> GetProductsAsync(ProductQuery query, CancellationToken cancellationToken = default);
 	Task<ProductDetailDto?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default);
+	Task<List<string>> GetCategoriesAsync(CancellationToken cancellationToken = default);
 }
