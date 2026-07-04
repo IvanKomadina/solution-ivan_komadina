@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getProducts } from '../api/products'
-import type { PagedResult, ProductListItem } from '../types/product'
+import type { PagedResult, ProductFilters, ProductListItem } from '../types/product'
 import { ProductCard } from '../components/ProductCard'
+import { ProductFiltersBar } from '../components/ProductFiltersBar'
 
 const PAGE_SIZE = 12
 
 export function ProductListPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const page = Number(searchParams.get('page') ?? '1')
+  const filters: ProductFilters = {
+    category: searchParams.get('category') ?? undefined,
+    minPrice: searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined,
+    maxPrice: searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined,
+  }
+
   const [data, setData] = useState<PagedResult<ProductListItem> | null>(null)
-  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -16,7 +26,7 @@ export function ProductListPage() {
     setLoading(true)
     setError(null)
 
-    getProducts(page, PAGE_SIZE)
+    getProducts(page, PAGE_SIZE, filters)
       .then((result) => {
         if (!cancelled) setData(result)
       })
@@ -30,11 +40,31 @@ export function ProductListPage() {
     return () => {
       cancelled = true
     }
-  }, [page])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, filters.category, filters.minPrice, filters.maxPrice])
+
+  function updateFilters(newFilters: ProductFilters) {
+    const params = new URLSearchParams()
+    params.set('page', '1') // reset to page 1 whenever filters change
+
+    if (newFilters.category) params.set('category', newFilters.category)
+    if (newFilters.minPrice !== undefined) params.set('minPrice', String(newFilters.minPrice))
+    if (newFilters.maxPrice !== undefined) params.set('maxPrice', String(newFilters.maxPrice))
+
+    setSearchParams(params)
+  }
+
+  function goToPage(newPage: number) {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', String(newPage))
+    setSearchParams(params)
+  }
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
       <h1 className="text-xl font-semibold mb-4">Products</h1>
+
+      <ProductFiltersBar filters={filters} onChange={updateFilters} />
 
       {loading && <p className="text-gray-500">Loading products...</p>}
 
@@ -55,7 +85,7 @@ export function ProductListPage() {
           <div className="flex items-center justify-center gap-4 mt-6">
             <button
               className="px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => goToPage(Math.max(1, page - 1))}
               disabled={page <= 1}
             >
               Previous
@@ -65,7 +95,7 @@ export function ProductListPage() {
             </span>
             <button
               className="px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
-              onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+              onClick={() => goToPage(Math.min(data.totalPages, page + 1))}
               disabled={page >= data.totalPages}
             >
               Next

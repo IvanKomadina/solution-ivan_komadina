@@ -1,0 +1,92 @@
+import { useEffect, useState } from 'react'
+import { getCategories } from '../api/products'
+import type { ProductFilters } from '../types/product'
+
+interface Props {
+  filters: ProductFilters
+  onChange: (filters: ProductFilters) => void
+}
+
+export function ProductFiltersBar({ filters, onChange }: Props) {
+  const [categories, setCategories] = useState<string[]>([])
+  const [minPriceInput, setMinPriceInput] = useState(filters.minPrice?.toString() ?? '')
+  const [maxPriceInput, setMaxPriceInput] = useState(filters.maxPrice?.toString() ?? '')
+
+  useEffect(() => {
+    getCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]))
+  }, [])
+
+  function handleCategoryChange(category: string) {
+    onChange({ ...filters, category: category || undefined })
+  }
+
+  function commitMinPrice() {
+    const parsed = minPriceInput === '' ? undefined : Number(minPriceInput)
+    onChange({ ...filters, minPrice: Number.isNaN(parsed) ? undefined : parsed })
+  }
+
+  function commitMaxPrice() {
+    const parsed = maxPriceInput === '' ? undefined : Number(maxPriceInput)
+    onChange({ ...filters, maxPrice: Number.isNaN(parsed) ? undefined : parsed })
+  }
+
+  return (
+    <div className="flex flex-wrap gap-3 items-end mb-4">
+      <div className="flex flex-col gap-1">
+        <label htmlFor="category" className="text-xs text-gray-500">Category</label>
+        <select
+          id="category"
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+          value={filters.category ?? ''}
+          onChange={(e) => handleCategoryChange(e.target.value)}
+        >
+          <option value="">All categories</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="minPrice" className="text-xs text-gray-500">Min price</label>
+        <input
+          id="minPrice"
+          type="number"
+          min={0}
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-24"
+          value={minPriceInput}
+          onChange={(e) => setMinPriceInput(e.target.value)}
+          onBlur={commitMinPrice}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="maxPrice" className="text-xs text-gray-500">Max price</label>
+        <input
+          id="maxPrice"
+          type="number"
+          min={0}
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-24"
+          value={maxPriceInput}
+          onChange={(e) => setMaxPriceInput(e.target.value)}
+          onBlur={commitMaxPrice}
+        />
+      </div>
+
+      {(filters.category || filters.minPrice !== undefined || filters.maxPrice !== undefined) && (
+        <button
+          className="text-sm text-blue-600 hover:underline"
+          onClick={() => {
+            setMinPriceInput('')
+            setMaxPriceInput('')
+            onChange({})
+          }}
+        >
+          Clear filters
+        </button>
+      )}
+    </div>
+  )
+}

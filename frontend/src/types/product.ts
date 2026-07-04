@@ -26,3 +26,9 @@ export interface ProductDetail {
   thumbnail: string
   images: string[]
 }
+
+export interface ProductFilters {
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+}
