@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using ProductCatalog.Application.Products;
+using ProductCatalog.Application.Common;
+using ProductCatalog.Application.Products.Dtos;
 
 namespace ProductCatalog.Api.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController : BaseController
 {
 	private readonly IProductSource _productSource;
 
@@ -14,11 +15,11 @@ public class ProductsController : ControllerBase
 		_productSource = productSource;
 	}
 
-	/// </summary>
+	/// <summary>
 	/// Returns a paginated list of products (image, name, price, shortened description).
 	/// </summary>
 	[HttpGet]
-	public async Task<IActionResult> GetProducts(
+	public async Task<ActionResult<PagedResult<ProductListItemDto>>> GetProducts(
 		[FromQuery] int page = 1,
 		[FromQuery] int pageSize = 12,
 		[FromQuery] string? category = null,
@@ -32,7 +33,8 @@ public class ProductsController : ControllerBase
 
 		if (minPrice.HasValue && maxPrice.HasValue && minPrice > maxPrice)
 		{
-			return BadRequest(new { message = "minPrice cannot be greater than maxPrice." });
+			return HandleResponse(ServiceResponse<PagedResult<ProductListItemDto>>.Fail(
+				"minPrice cannot be greater than maxPrice."));
 		}
 
 		var query = new ProductQuery
@@ -45,34 +47,27 @@ public class ProductsController : ControllerBase
 			SearchTerm = search
 		};
 
-		var result = await _productSource.GetProductsAsync(query, cancellationToken);
-
-		return Ok(result);
+		var response = await _productSource.GetProductsAsync(query, cancellationToken);
+		return HandleResponse(response);
 	}
 
-	/// </summary>
-	/// Returns details for a single product by id.
+	/// <summary>
+	/// Returns full details for a single product by id.
 	/// </summary>
 	[HttpGet("{id:int}")]
-	public async Task<IActionResult> GetProductById(int id, CancellationToken cancellationToken = default)
+	public async Task<ActionResult<ProductDetailDto>> GetProductById(int id, CancellationToken cancellationToken = default)
 	{
-		var product = await _productSource.GetProductByIdAsync(id, cancellationToken);
-
-		if (product is null)
-		{
-			return NotFound();
-		}
-
-		return Ok(product);
+		var response = await _productSource.GetProductByIdAsync(id, cancellationToken);
+		return HandleResponse(response);
 	}
 
 	/// <summary>
 	/// Returns the list of product categories.
 	/// </summary>
 	[HttpGet("categories")]
-	public async Task<IActionResult> GetCategories(CancellationToken cancellationToken = default)
+	public async Task<ActionResult<List<string>>> GetCategories(CancellationToken cancellationToken)
 	{
-		var categories = await _productSource.GetCategoriesAsync(cancellationToken);
-		return Ok(categories);
+		var response = await _productSource.GetCategoriesAsync(cancellationToken);
+		return HandleResponse(response);
 	}
 }

@@ -19,7 +19,7 @@ public class DummyJsonProductSource : IProductSource
 		_logger = logger;
 	}
 
-	public async Task<PagedResult<ProductListItemDto>> GetProductsAsync(ProductQuery query, CancellationToken cancellationToken = default)
+	public async Task<ServiceResponse<PagedResult<ProductListItemDto>>> GetProductsAsync(ProductQuery query, CancellationToken cancellationToken = default)
 	{
 		var hasSearch = !string.IsNullOrWhiteSpace(query.SearchTerm);
 		var hasCategory = !string.IsNullOrWhiteSpace(query.Category);
@@ -63,31 +63,45 @@ public class DummyJsonProductSource : IProductSource
 					.Select(MapToListItem)
 					.ToList();
 
-				return new PagedResult<ProductListItemDto>
+				var pagedResult = new PagedResult<ProductListItemDto>
 				{
 					Items = pageItems,
 					Page = query.Page,
 					PageSize = query.PageSize,
 					TotalCount = totalCount
 				};
+
+				return ServiceResponse<PagedResult<ProductListItemDto>>.Ok(pagedResult);
 			}
 
-			return new PagedResult<ProductListItemDto>
+			var result = new PagedResult<ProductListItemDto>
 			{
 				Items = filteredList.Select(MapToListItem).ToList(),
 				Page = query.Page,
 				PageSize = query.PageSize,
 				TotalCount = response.Total
 			};
+
+			return ServiceResponse<PagedResult<ProductListItemDto>>.Ok(result);
 		}
-		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		catch (HttpRequestException ex)
 		{
-			_logger.LogError(ex, "Failed to fetch product list from DummyJSON ({Url})", url);
-			throw new ProductSourceUnavailableException("Unable to retrieve products from the external product source.", ex);
+			_logger.LogError(ex, "HTTP error while fetching products from DummyJSON ({Url})", url);
+			return ServiceResponse<PagedResult<ProductListItemDto>>.Error("Unable to connect to the product service.");
+		}
+		catch (TaskCanceledException ex)
+		{
+			_logger.LogError(ex, "Request timed out while fetching products from DummyJSON ({Url})", url);
+			return ServiceResponse<PagedResult<ProductListItemDto>>.Error("The request to the product service timed out.");
+		}
+		catch (JsonException ex)
+		{
+			_logger.LogError(ex, "Invalid response received from DummyJSON ({Url})", url);
+			return ServiceResponse<PagedResult<ProductListItemDto>>.Error("Invalid response received from the product service.");
 		}
 	}
 
-	public async Task<ProductDetailDto?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
+	public async Task<ServiceResponse<ProductDetailDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
 	{
 		_logger.LogInformation("Fetching product {ProductId} from DummyJSON", id);
 
@@ -98,23 +112,38 @@ public class DummyJsonProductSource : IProductSource
 			if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
 			{
 				_logger.LogWarning("Product {ProductId} not found in DummyJSON", id);
-				return null;
+				return ServiceResponse<ProductDetailDto>.Fail("Product not found.", 404);
 			}
 
 			response.EnsureSuccessStatusCode();
 
 			var product = await response.Content.ReadFromJsonAsync<DummyJsonProductDto>(cancellationToken: cancellationToken);
 
-			return product is null ? null : MapToDetail(product);
+			if (product is null)
+			{
+				return ServiceResponse<ProductDetailDto>.Error("No response received from the product service.");
+			}
+
+			return ServiceResponse<ProductDetailDto>.Ok(MapToDetail(product));
 		}
-		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		catch (HttpRequestException ex)
 		{
-			_logger.LogError(ex, "Failed to fetch product {ProductId} from DummyJSON", id);
-			throw new ProductSourceUnavailableException($"Unable to retrieve product {id} from the external product source.", ex);
+			_logger.LogError(ex, "HTTP error while fetching product {ProductId} from DummyJSON", id);
+			return ServiceResponse<ProductDetailDto>.Error("Unable to connect to the product service.");
+		}
+		catch (TaskCanceledException ex)
+		{
+			_logger.LogError(ex, "Request timed out while fetching product {ProductId} from DummyJSON", id);
+			return ServiceResponse<ProductDetailDto>.Error("The request to the product service timed out.");
+		}
+		catch (JsonException ex)
+		{
+			_logger.LogError(ex, "Invalid response received from DummyJSON for product {ProductId}", id);
+			return ServiceResponse<ProductDetailDto>.Error("Invalid response received from the product service.");
 		}
 	}
 
-	public async Task<List<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+	public async Task<ServiceResponse<List<string>>> GetCategoriesAsync(CancellationToken cancellationToken = default)
 	{
 		_logger.LogInformation("Fetching categories from DummyJSON");
 
@@ -123,12 +152,22 @@ public class DummyJsonProductSource : IProductSource
 			var categories = await _httpClient.GetFromJsonAsync<List<DummyJsonCategoryDto>>("products/categories", cancellationToken)
 				?? new List<DummyJsonCategoryDto>();
 
-			return categories.Select(c => c.Slug).ToList();
+			return ServiceResponse<List<string>>.Ok(categories.Select(c => c.Slug).ToList());
 		}
-		catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+		catch (HttpRequestException ex)
 		{
-			_logger.LogError(ex, "Failed to fetch categories from DummyJSON");
-			throw new ProductSourceUnavailableException("Unable to retrieve categories from the external product source.", ex);
+			_logger.LogError(ex, "HTTP error while fetching categories from DummyJSON");
+			return ServiceResponse<List<string>>.Error("Unable to connect to the product service.");
+		}
+		catch (TaskCanceledException ex)
+		{
+			_logger.LogError(ex, "Request timed out while fetching categories from DummyJSON");
+			return ServiceResponse<List<string>>.Error("The request to the product service timed out.");
+		}
+		catch (JsonException ex)
+		{
+			_logger.LogError(ex, "Invalid response received from DummyJSON categories endpoint");
+			return ServiceResponse<List<string>>.Error("Invalid response received from the product service.");
 		}
 	}
 
