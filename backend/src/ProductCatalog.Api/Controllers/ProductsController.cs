@@ -24,6 +24,7 @@ public class ProductsController : ControllerBase
 		[FromQuery] string? category = null,
 		[FromQuery] decimal? minPrice = null,
 		[FromQuery] decimal? maxPrice = null,
+		[FromQuery] string? search = null,
 		CancellationToken cancellationToken = default)
 	{
 		if (page < 1) page = 1;
@@ -40,7 +41,8 @@ public class ProductsController : ControllerBase
 			PageSize = pageSize,
 			Category = category,
 			MinPrice = minPrice,
-			MaxPrice = maxPrice
+			MaxPrice = maxPrice,
+			SearchTerm = search
 		};
 
 		var result = await _productSource.GetProductsAsync(query, cancellationToken);

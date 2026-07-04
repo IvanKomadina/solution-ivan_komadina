@@ -21,8 +21,13 @@ public class DummyJsonProductSource : IProductSource
 
 	public async Task<PagedResult<ProductListItemDto>> GetProductsAsync(ProductQuery query, CancellationToken cancellationToken = default)
 	{
+		var hasSearch = !string.IsNullOrWhiteSpace(query.SearchTerm);
+		var hasCategory = !string.IsNullOrWhiteSpace(query.Category);
 		var hasPriceFilter = query.MinPrice.HasValue || query.MaxPrice.HasValue;
-		var url = BuildUrl(query, hasPriceFilter);
+
+		var needsManualPaging = hasPriceFilter || hasCategory;
+
+		var url = BuildUrl(query, hasSearch, hasCategory, hasPriceFilter);
 
 		_logger.LogInformation("Fetching products from DummyJSON: {Url}", url);
 
@@ -33,6 +38,12 @@ public class DummyJsonProductSource : IProductSource
 
 			IEnumerable<DummyJsonProductDto> products = response.Products;
 
+			if (hasCategory)
+			{
+				products = products.Where(p =>
+					string.Equals(p.Category, query.Category, StringComparison.OrdinalIgnoreCase));
+			}
+
 			if (hasPriceFilter)
 			{
 				products = products.Where(p =>
@@ -42,9 +53,8 @@ public class DummyJsonProductSource : IProductSource
 
 			var filteredList = products.ToList();
 
-			// If query has price filters, we need to manually paginate the results since
-			// DummyJSON does not support server-side filtering by price.
-			if (hasPriceFilter)
+			// Manually handle paging if we had to filter in-memory, otherwise rely on the API's paging.
+			if (needsManualPaging)
 			{
 				var totalCount = filteredList.Count;
 				var pageItems = filteredList
@@ -161,24 +171,21 @@ public class DummyJsonProductSource : IProductSource
 		return text[..(maxLength - 3)].TrimEnd() + "...";
 	}
 
-	private static string BuildUrl(ProductQuery query, bool hasPriceFilter)
+	private static string BuildUrl(ProductQuery query, bool hasSearch, bool hasCategory, bool hasPriceFilter)
 	{
-		var hasCategory = !string.IsNullOrWhiteSpace(query.Category);
 		var skip = (query.Page - 1) * query.PageSize;
 
-		if (hasCategory && hasPriceFilter)
+		if (hasSearch)
 		{
-			var category = Uri.EscapeDataString(query.Category!);
-			return $"products/category/{category}?limit=0";
+			var q = Uri.EscapeDataString(query.SearchTerm!);
+
+			// If category or price also need in-memory filtering on top, fetch everything matching the search term.
+			return (hasCategory || hasPriceFilter)
+				? $"products/search?q={q}&limit=0"
+				: $"products/search?q={q}&limit={query.PageSize}&skip={skip}";
 		}
 
-		if (hasCategory)
-		{
-			var category = Uri.EscapeDataString(query.Category!);
-			return $"products/category/{category}?limit={query.PageSize}&skip={skip}";
-		}
-
-		if (hasPriceFilter)
+		if (hasCategory || hasPriceFilter)
 		{
 			return "products?limit=0";
 		}
