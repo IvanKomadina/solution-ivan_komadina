@@ -9,6 +9,13 @@ export class ApiError extends Error {
   }
 }
 
+interface ServiceResponseEnvelope<T> {
+  data: T
+  success: boolean
+  message?: string | null
+  statusCode: number
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`)
 
@@ -16,5 +23,6 @@ export async function apiGet<T>(path: string): Promise<T> {
     throw new ApiError(response.status, `Request failed: ${response.status} ${response.statusText}`)
   }
 
-  return await response.json()
+  const envelope = (await response.json()) as ServiceResponseEnvelope<T>
+  return envelope.data
 }
