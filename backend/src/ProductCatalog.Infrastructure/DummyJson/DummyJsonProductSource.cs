@@ -42,7 +42,6 @@ public class DummyJsonProductSource : IProductSource
 
 			var filteredList = products.ToList();
 
-
 			// If query has price filters, we need to manually paginate the results since
 			// DummyJSON does not support server-side filtering by price.
 			if (hasPriceFilter)
@@ -164,12 +163,18 @@ public class DummyJsonProductSource : IProductSource
 
 	private static string BuildUrl(ProductQuery query, bool hasPriceFilter)
 	{
+		var hasCategory = !string.IsNullOrWhiteSpace(query.Category);
 		var skip = (query.Page - 1) * query.PageSize;
 
-		if (!string.IsNullOrWhiteSpace(query.Category))
+		if (hasCategory && hasPriceFilter)
 		{
-			var category = Uri.EscapeDataString(query.Category);
+			var category = Uri.EscapeDataString(query.Category!);
+			return $"products/category/{category}?limit=0";
+		}
 
+		if (hasCategory)
+		{
+			var category = Uri.EscapeDataString(query.Category!);
 			return $"products/category/{category}?limit={query.PageSize}&skip={skip}";
 		}
 
