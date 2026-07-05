@@ -4,6 +4,7 @@ export interface ProductListItem {
   thumbnail: string
   price: number
   shortDescription: string
+  isFavorite?: boolean
 }
 
 export interface PagedResult<T> {

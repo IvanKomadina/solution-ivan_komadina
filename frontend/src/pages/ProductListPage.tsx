@@ -5,11 +5,13 @@ import type { PagedResult, ProductFilters, ProductListItem } from '../types/prod
 import { ProductCard } from '../components/ProductCard'
 import { ProductFiltersBar } from '../components/ProductFiltersBar'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
+import { getAuthToken } from '../api/client'
 
 const PAGE_SIZE = 12
 
 export function ProductListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const signedIn = Boolean(getAuthToken())
 
   const page = Number(searchParams.get('page') ?? '1')
   const filters: ProductFilters = {
@@ -51,7 +53,7 @@ export function ProductListPage() {
   
   function updateFilters(newFilters: ProductFilters) {
     const params = new URLSearchParams()
-    params.set('page', '1') // reset to page 1 whenever filters change
+    params.set('page', '1')
 
     if (newFilters.category) params.set('category', newFilters.category)
     if (newFilters.minPrice !== undefined) params.set('minPrice', String(newFilters.minPrice))
@@ -67,45 +69,38 @@ export function ProductListPage() {
   }
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <h1 className="text-xl font-semibold mb-4">Products</h1>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold text-white">Products</h1>
+          <p className="mt-2 text-sm text-slate-300">{signedIn ? 'You can favorite products now.' : 'Sign in to save favorites.'}</p>
+        </div>
+      </div>
 
-      <ProductFiltersBar filters={filters} onChange={updateFilters} />
+      <div className="mt-6">
+        <ProductFiltersBar filters={filters} onChange={updateFilters} />
+      </div>
 
-      {loading && <p className="text-gray-500">Loading products...</p>}
+      {loading && <p className="mt-6 text-slate-300">Loading products...</p>}
 
-      {!loading && error && <p className="text-red-600">{error}</p>}
+      {!loading && error && <p className="mt-6 text-red-300">{error}</p>}
 
       {!loading && !error && data && data.items.length === 0 && (
-        <p className="text-gray-500">No products found.</p>
+        <p className="mt-6 text-slate-300">No products found.</p>
       )}
 
       {!loading && !error && data && data.items.length > 0 && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {data.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-6 text-center">
-            <button
-              className="px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
-              onClick={() => goToPage(Math.max(1, page - 1))}
-              disabled={page <= 1}
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {data.page} of {data.totalPages}
-            </span>
-            <button
-              className="px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
-              onClick={() => goToPage(Math.min(data.totalPages, page + 1))}
-              disabled={page >= data.totalPages}
-            >
-              Next
-            </button>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-center">
+            <button className="rounded-full border border-white/10 px-4 py-2 text-sm text-white disabled:opacity-40" onClick={() => goToPage(Math.max(1, page - 1))} disabled={page <= 1}>Previous</button>
+            <span className="text-sm text-slate-300">Page {data.page} of {data.totalPages}</span>
+            <button className="rounded-full border border-white/10 px-4 py-2 text-sm text-white disabled:opacity-40" onClick={() => goToPage(Math.min(data.totalPages, page + 1))} disabled={page >= data.totalPages}>Next</button>
           </div>
         </>
       )}
