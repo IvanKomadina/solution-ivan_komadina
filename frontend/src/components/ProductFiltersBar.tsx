@@ -56,25 +56,25 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/10 p-4 shadow-xl shadow-black/10 backdrop-blur sm:p-5">
+    <div className="rounded-3xl border border-sky-100 bg-white/90 p-4 shadow-xl shadow-sky-100/60 backdrop-blur sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end lg:justify-center">
         <div className="flex w-full flex-col gap-2 lg:max-w-sm">
-          <label htmlFor="search" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Search</label>
+          <label htmlFor="search" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Search</label>
           <input
             id="search"
             type="text"
             placeholder="Search by name..."
-            className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/20"
+            className="w-full rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/50"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
         </div>
 
         <div className="flex w-full flex-col gap-2 lg:w-60">
-          <label htmlFor="category" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Category</label>
+          <label htmlFor="category" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Category</label>
           <select
             id="category"
-            className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/20"
+            className="w-full rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-200/50"
             value={filters.category ?? ''}
             onChange={(e) => handleCategoryChange(e.target.value)}
           >
@@ -87,12 +87,12 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
 
         <div className="flex w-full gap-3 sm:w-auto">
           <div className="flex flex-1 flex-col gap-2 sm:flex-none">
-            <label htmlFor="minPrice" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Min price</label>
+            <label htmlFor="minPrice" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Min price</label>
             <input
               id="minPrice"
               type="number"
               min={0}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/20 sm:w-32"
+              className="w-full rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/50 sm:w-32"
               value={minPriceInput}
               onChange={(e) => setMinPriceInput(e.target.value)}
               onBlur={commitMinPrice}
@@ -100,12 +100,12 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
           </div>
 
           <div className="flex flex-1 flex-col gap-2 sm:flex-none">
-            <label htmlFor="maxPrice" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">Max price</label>
+            <label htmlFor="maxPrice" className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Max price</label>
             <input
               id="maxPrice"
               type="number"
               min={0}
-              className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/20 sm:w-32"
+              className="w-full rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/50 sm:w-32"
               value={maxPriceInput}
               onChange={(e) => setMaxPriceInput(e.target.value)}
               onBlur={commitMaxPrice}
@@ -115,7 +115,7 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
 
         {hasActiveFilters && (
           <button
-            className="inline-flex items-center justify-center self-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:border-sky-300/40 hover:bg-sky-300/10 hover:text-sky-100 lg:self-end"
+            className="inline-flex items-center justify-center self-center rounded-full border border-sky-100 bg-sky-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-sky-200 hover:bg-sky-100 hover:text-slate-900 lg:self-end"
             onClick={() => {
               setMinPriceInput('')
               setMaxPriceInput('')

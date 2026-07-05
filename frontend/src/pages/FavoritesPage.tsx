@@ -44,24 +44,24 @@ export function FavoritesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-white">Your favorites</h1>
-      {loading && <p className="mt-4 text-slate-300">Loading favorites...</p>}
-      {!loading && error && <p className="mt-4 text-red-300">{error}</p>}
-      {!loading && !error && favorites.length === 0 && <p className="mt-4 text-slate-300">No favorites yet.</p>}
+      <h1 className="text-2xl font-semibold text-slate-900">Your favorites</h1>
+      {loading && <p className="mt-4 text-slate-600">Loading favorites...</p>}
+      {!loading && error && <p className="mt-4 text-rose-500">{error}</p>}
+      {!loading && !error && favorites.length === 0 && <p className="mt-4 text-slate-600">No favorites yet.</p>}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {favorites.map((favorite) => (
-          <div key={favorite.productId} className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl shadow-black/10 transition hover:-translate-y-1 hover:border-white/20">
+          <div key={favorite.productId} className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-lg shadow-sky-100/60 hover:border-sky-200">
             <Link to={`/products/${favorite.productId}`} state={{ from: location.pathname + location.search }} className="group block">
               <img src={favorite.thumbnail} alt={favorite.title} className="h-44 w-full object-cover" />
               <div className="p-4">
-                <h2 className="font-semibold text-white transition group-hover:text-emerald-200">{favorite.title}</h2>
-                <p className="mt-1 line-clamp-2 text-sm text-slate-300">{favorite.description}</p>
+                <h2 className="font-semibold text-slate-900 transition group-hover:text-sky-700">{favorite.title}</h2>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-600">{favorite.description}</p>
               </div>
             </Link>
-            <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-4">
-              <span className="font-semibold text-emerald-300">${favorite.price.toFixed(2)}</span>
+            <div className="flex items-center justify-between gap-3 border-t border-sky-100 px-4 py-4">
+              <span className="font-semibold text-sky-700">${favorite.price.toFixed(2)}</span>
               <button
-                className="rounded-full border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-100 hover:bg-rose-500/20 hover:text-white"
+                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-100 hover:text-rose-700"
                 onClick={async () => {
                   await removeFavorite(favorite.productId)
                   setFavorites((items) => items.filter((item) => item.productId !== favorite.productId))

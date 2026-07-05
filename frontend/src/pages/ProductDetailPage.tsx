@@ -91,17 +91,17 @@ export function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <button onClick={() => navigate(from ?? '/')} className="text-lg font-medium text-sky-300 hover:text-sky-200">&larr; Back</button>
+      <button onClick={() => navigate(from ?? '/')} className="text-lg font-medium text-sky-700 hover:text-sky-800">&larr; Back</button>
 
-      {loading && <p className="mt-4 text-slate-300">Loading product...</p>}
+      {loading && <p className="mt-4 text-slate-600">Loading product...</p>}
 
-      {!loading && error === 'not-found' && <p className="mt-4 text-slate-300">Product not found.</p>}
+      {!loading && error === 'not-found' && <p className="mt-4 text-slate-600">Product not found.</p>}
 
-      {!loading && error === 'error' && <p className="mt-4 text-red-300">Could not load this product. Please try again.</p>}
+      {!loading && error === 'error' && <p className="mt-4 text-rose-500">Could not load this product. Please try again.</p>}
 
       {!loading && !error && product && (
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-3 shadow-2xl shadow-black/20">
+          <div className="rounded-3xl border border-sky-100 bg-white p-3 shadow-2xl shadow-sky-100/60">
             <div className="overflow-hidden rounded-2xl">
               <img src={activeImage ?? product.thumbnail} alt={product.title} className="aspect-square w-full object-cover" />
             </div>
@@ -110,7 +110,7 @@ export function ProductDetailPage() {
                 {product.images.map((img) => (
                   <button
                     key={img}
-                    className={`overflow-hidden rounded-xl border ${activeImage === img ? 'border-sky-300 ring-2 ring-sky-300/25' : 'border-white/10 hover:border-white/20'}`}
+                    className={`overflow-hidden rounded-xl border ${activeImage === img ? 'border-sky-300 ring-2 ring-sky-200/50' : 'border-sky-100 hover:border-sky-200'}`}
                     onClick={() => setActiveImage(img)}
                     type="button"
                   >
@@ -121,15 +121,15 @@ export function ProductDetailPage() {
             )}
           </div>
 
-          <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20">
-            <h1 className="text-3xl font-semibold text-white">{product.title}</h1>
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{product.category}</p>
-            <p className="text-2xl font-bold text-sky-300">${product.price.toFixed(2)}</p>
-            <p className="text-sm text-slate-300">Rating: {product.rating} / 5</p>
-            <p className="text-sm text-slate-300">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</p>
-            <p className="text-slate-200">{product.description}</p>
+          <div className="flex flex-col gap-4 rounded-3xl border border-sky-100 bg-white p-6 shadow-2xl shadow-sky-100/60">
+            <h1 className="text-3xl font-semibold text-slate-900">{product.title}</h1>
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{product.category}</p>
+            <p className="text-2xl font-bold text-sky-700">${product.price.toFixed(2)}</p>
+            <p className="text-sm text-slate-600">Rating: {product.rating} / 5</p>
+            <p className="text-sm text-slate-600">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</p>
+            <p className="text-slate-700">{product.description}</p>
             <button
-              className="mt-2 rounded-full bg-gradient-to-r from-sky-300 to-cyan-200 px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-2 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-200 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={toggleFavorite}
               disabled={saving}
             >
