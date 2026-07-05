@@ -43,7 +43,7 @@ export function Navbar({ signedIn, onSignOut }: Props) {
           ) : (
             <Link
               to="/login"
-              className="rounded-full bg-slate-900 px-4 py-2.5 font-semibold text-white shadow-lg shadow-slate-200 hover:bg-slate-800"
+              className="rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2.5 font-semibold text-white shadow-lg shadow-sky-200 hover:shadow-sky-300"
             >
               Sign in
             </Link>
