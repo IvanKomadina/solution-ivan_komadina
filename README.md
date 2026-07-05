@@ -13,6 +13,17 @@ The backend acts as the API layer for the frontend and handles authentication, p
 - `backend/` - ASP.NET Core solution
 - `frontend/` - React application
 
+## Download the Project
+
+Clone the repository to your machine:
+
+```bash
+git clone <repository-url>
+cd solution-ivan_komadina
+```
+
+Replace `<repository-url>` with the Git URL for this project.
+
 ## Prerequisites
 
 Make sure you have the following installed:
