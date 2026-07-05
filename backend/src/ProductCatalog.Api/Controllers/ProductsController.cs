@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProductCatalog.Application.Products;
 using ProductCatalog.Application.Common;
 using ProductCatalog.Application.Products.Dtos;
+using Microsoft.AspNetCore.Http;
 
 namespace ProductCatalog.Api.Controllers;
 
@@ -17,8 +18,18 @@ public class ProductsController : BaseController
 
 	/// <summary>
 	/// Returns a paginated list of products (image, name, price, shortened description).
+	/// Supports filtering by category, price range, and search term.
 	/// </summary>
+	/// <param name="page">1-based page number (default 1).</param>
+	/// <param name="pageSize">Items per page, 1-100 (default 12).</param>
+	/// <param name="category">Optional category slug to filter by (see <c>GET /api/products/categories</c>).</param>
+	/// <param name="minPrice">Optional inclusive minimum price.</param>
+	/// <param name="maxPrice">Optional inclusive maximum price.</param>
+	/// <param name="search">Optional text to search product names for.</param>
 	[HttpGet]
+	[ProducesResponseType(typeof(ServiceResponse<PagedResult<ProductListItemDto>>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ServiceResponse<PagedResult<ProductListItemDto>>), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(ServiceResponse<PagedResult<ProductListItemDto>>), StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<ServiceResponse<PagedResult<ProductListItemDto>>>> GetProducts(
 		[FromQuery] int page = 1,
 		[FromQuery] int pageSize = 12,
@@ -54,7 +65,11 @@ public class ProductsController : BaseController
 	/// <summary>
 	/// Returns full details for a single product by id.
 	/// </summary>
+	/// <param name="id">The product id.</param>
 	[HttpGet("{id:int}")]
+	[ProducesResponseType(typeof(ServiceResponse<ProductDetailDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ServiceResponse<ProductDetailDto>), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(ServiceResponse<ProductDetailDto>), StatusCodes.Status500InternalServerError)]
 	public async Task<ActionResult<ServiceResponse<ProductDetailDto>>> GetProductById(int id, CancellationToken cancellationToken = default)
 	{
 		var response = await _productSource.GetProductByIdAsync(id, cancellationToken);
@@ -62,10 +77,12 @@ public class ProductsController : BaseController
 	}
 
 	/// <summary>
-	/// Returns the list of product categories.
+	/// Returns the list of available product category slugs, usable as the <c>category</c> filter above.
 	/// </summary>
 	[HttpGet("categories")]
-	public async Task<ActionResult<ServiceResponse<List<string>>>> GetCategories(CancellationToken cancellationToken)
+	[ProducesResponseType(typeof(ServiceResponse<List<string>>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ServiceResponse<List<string>>), StatusCodes.Status500InternalServerError)]
+	public async Task<ActionResult<ServiceResponse<List<string>>>> GetCategories(CancellationToken cancellationToken = default)
 	{
 		var response = await _productSource.GetCategoriesAsync(cancellationToken);
 		return HandleResponse(response);
