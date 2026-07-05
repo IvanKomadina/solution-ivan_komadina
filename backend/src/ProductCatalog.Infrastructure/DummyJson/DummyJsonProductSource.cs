@@ -99,6 +99,11 @@ public class DummyJsonProductSource : IProductSource
 			_logger.LogError(ex, "Invalid response received from DummyJSON ({Url})", url);
 			return ServiceResponse<PagedResult<ProductListItemDto>>.Error("Invalid response received from the product service.");
 		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unexpected error while fetching products from DummyJSON ({Url})", url);
+			return ServiceResponse<PagedResult<ProductListItemDto>>.Error("An unexpected error occurred while fetching products.");
+		}
 	}
 
 	public async Task<ServiceResponse<ProductDetailDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -141,6 +146,11 @@ public class DummyJsonProductSource : IProductSource
 			_logger.LogError(ex, "Invalid response received from DummyJSON for product {ProductId}", id);
 			return ServiceResponse<ProductDetailDto>.Error("Invalid response received from the product service.");
 		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unexpected error while fetching product {ProductId}", id);
+			return ServiceResponse<ProductDetailDto>.Error("An unexpected error occurred while fetching products.");
+		}
 	}
 
 	public async Task<ServiceResponse<List<string>>> GetCategoriesAsync(CancellationToken cancellationToken = default)
@@ -168,6 +178,11 @@ public class DummyJsonProductSource : IProductSource
 		{
 			_logger.LogError(ex, "Invalid response received from DummyJSON categories endpoint");
 			return ServiceResponse<List<string>>.Error("Invalid response received from the product service.");
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unexpected error while fetching categories from DummyJSON");
+			return ServiceResponse<List<string>>.Error("An unexpected error occurred while fetching products.");
 		}
 	}
 
