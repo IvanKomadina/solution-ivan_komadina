@@ -34,7 +34,7 @@ Make sure you have the following installed:
 
 ### Backend
 
-The backend uses `appsettings.json` and `appsettings.Development.json` for configuration.
+The backend uses `appsettings.json` for configuration.
 
 Important values you may want to review:
 
@@ -49,7 +49,7 @@ Important values you may want to review:
 
 The frontend reads environment variables from `frontend/.env`.
 
-Example:
+Create .env with this content:
 
 ```env
 VITE_API_BASE_URL=https://localhost:7208/api
