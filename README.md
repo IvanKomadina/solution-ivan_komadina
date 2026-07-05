@@ -127,7 +127,7 @@ If authentication is not working, confirm:
 
 ## AI Tool Usage
 
-AI tools were used across the project for scaffolding, coding and documentation because of faster development.
+AI tools were used across the project for scaffolding, coding and documentation because of faster development and bug fixes.
 
 - backend scaffold creation, including the solution, projects, and dependency injection wiring
 - frontend scaffold creation
