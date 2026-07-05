@@ -1,4 +1,5 @@
 using ProductCatalog.Application.Products;
+using ProductCatalog.Infrastructure.Caching;
 using ProductCatalog.Infrastructure.DummyJson;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,15 +26,18 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddExceptionHandler<ProductCatalog.Api.Middleware.GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddMemoryCache();
 
 builder.Services.Configure<DummyJsonOptions>(builder.Configuration.GetSection(DummyJsonOptions.SectionName));
 
-builder.Services.AddHttpClient<IProductSource, DummyJsonProductSource>((sp, client) =>
+builder.Services.AddHttpClient<IDummyJsonProductApi, DummyJsonProductApi>((sp, client) =>
 {
 	var options = builder.Configuration.GetSection(DummyJsonOptions.SectionName).Get<DummyJsonOptions>()
 		?? new DummyJsonOptions();
 	client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
 });
+
+builder.Services.AddScoped<IProductSource, CachedProductSource>();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 
