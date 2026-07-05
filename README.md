@@ -18,7 +18,7 @@ The backend acts as the API layer for the frontend and handles authentication, p
 Clone the repository to your machine:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/IvanKomadina/solution-ivan_komadina.git
 cd solution-ivan_komadina
 ```
 
