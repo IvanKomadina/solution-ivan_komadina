@@ -50,6 +50,13 @@ If needed, update this value to match your local backend URL.
 
 The frontend stores the auth token in browser local storage under `pc_token`.
 
+### Login Credentials
+
+Use the following DummyJSON test account to sign in:
+
+- Username: `emilys`
+- Password: `emilyspass`
+
 ## Installation
 
 ### Backend
