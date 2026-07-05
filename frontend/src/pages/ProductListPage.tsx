@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { getProducts } from '../api/products'
 import type { PagedResult, ProductFilters, ProductListItem } from '../types/product'
 import { ProductCard } from '../components/ProductCard'
 import { ProductFiltersBar } from '../components/ProductFiltersBar'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 
 const PAGE_SIZE = 12
 
@@ -21,6 +22,10 @@ export function ProductListPage() {
   const [data, setData] = useState<PagedResult<ProductListItem> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const location = useLocation()
+  const scrollKey = location.pathname + location.search
+  useScrollRestoration(scrollKey, !loading && !error)
 
   useEffect(() => {
     let cancelled = false
@@ -83,7 +88,7 @@ export function ProductListPage() {
             ))}
           </div>
 
-          <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-6 text-center">
             <button
               className="px-3 py-1.5 rounded border border-gray-300 disabled:opacity-40"
               onClick={() => goToPage(Math.max(1, page - 1))}

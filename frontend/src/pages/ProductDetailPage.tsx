@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getProductById } from '../api/products'
 import { ApiError } from '../api/client'
 import type { ProductDetail } from '../types/product'
+import { useLocation } from 'react-router-dom'
 
 export function ProductDetailPage() {
-    const { id } = useParams<{ id: string }>()
-    const [product, setProduct] = useState<ProductDetail | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<'not-found' | 'error' | null>(null)
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const [product, setProduct] = useState<ProductDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<'not-found' | 'error' | null>(null)
+  const location = useLocation()
+  const from = location.state?.from
 
   useEffect(() => {
     if (!id) return
@@ -41,9 +45,12 @@ export function ProductDetailPage() {
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <Link to="/" className="text-sm text-blue-600 hover:underline">
+      <button
+        onClick={() => navigate(from ?? '/')}
+        className="text-sm text-blue-600 hover:underline"
+      >
         &larr; Back to products
-      </Link>
+      </button>
 
       {loading && <p className="text-gray-500 mt-4">Loading product...</p>}
 

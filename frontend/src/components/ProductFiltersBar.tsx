@@ -49,24 +49,24 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
     filters.category || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.searchTerm
 
   return (
-    <div className="flex flex-wrap gap-3 items-end mb-4">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end mb-4">
+      <div className="flex flex-col gap-1 w-full sm:w-auto">
         <label htmlFor="search" className="text-xs text-gray-500">Search</label>
         <input
           id="search"
           type="text"
           placeholder="Search by name..."
-          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-48"
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-full sm:w-48"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
         />
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 w-full sm:w-auto">
         <label htmlFor="category" className="text-xs text-gray-500">Category</label>
         <select
           id="category"
-          className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-full sm:w-auto"
           value={filters.category ?? ''}
           onChange={(e) => handleCategoryChange(e.target.value)}
         >
@@ -77,35 +77,37 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
         </select>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="minPrice" className="text-xs text-gray-500">Min price</label>
-        <input
-          id="minPrice"
-          type="number"
-          min={0}
-          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-24"
-          value={minPriceInput}
-          onChange={(e) => setMinPriceInput(e.target.value)}
-          onBlur={commitMinPrice}
-        />
-      </div>
+      <div className="flex gap-3 w-full sm:w-auto">
+        <div className="flex flex-col gap-1 flex-1 sm:flex-none">
+          <label htmlFor="minPrice" className="text-xs text-gray-500">Min price</label>
+          <input
+            id="minPrice"
+            type="number"
+            min={0}
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm w-full sm:w-24"
+            value={minPriceInput}
+            onChange={(e) => setMinPriceInput(e.target.value)}
+            onBlur={commitMinPrice}
+          />
+        </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="maxPrice" className="text-xs text-gray-500">Max price</label>
-        <input
-          id="maxPrice"
-          type="number"
-          min={0}
-          className="border border-gray-300 rounded px-2 py-1.5 text-sm w-24"
-          value={maxPriceInput}
-          onChange={(e) => setMaxPriceInput(e.target.value)}
-          onBlur={commitMaxPrice}
-        />
+        <div className="flex flex-col gap-1 flex-1 sm:flex-none">
+          <label htmlFor="maxPrice" className="text-xs text-gray-500">Max price</label>
+          <input
+            id="maxPrice"
+            type="number"
+            min={0}
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm w-full sm:w-24"
+            value={maxPriceInput}
+            onChange={(e) => setMaxPriceInput(e.target.value)}
+            onBlur={commitMaxPrice}
+          />
+        </div>
       </div>
 
       {hasActiveFilters && (
         <button
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-blue-600 hover:underline text-left sm:text-center"
           onClick={() => {
             setMinPriceInput('')
             setMaxPriceInput('')
