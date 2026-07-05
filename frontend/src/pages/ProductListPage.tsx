@@ -5,13 +5,11 @@ import type { PagedResult, ProductFilters, ProductListItem } from '../types/prod
 import { ProductCard } from '../components/ProductCard'
 import { ProductFiltersBar } from '../components/ProductFiltersBar'
 import { useScrollRestoration } from '../hooks/useScrollRestoration'
-import { getAuthToken } from '../api/client'
 
 const PAGE_SIZE = 12
 
 export function ProductListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const signedIn = Boolean(getAuthToken())
 
   const page = Number(searchParams.get('page') ?? '1')
   const filters: ProductFilters = {
@@ -70,13 +68,6 @@ export function ProductListPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold text-white">Products</h1>
-          <p className="mt-2 text-sm text-slate-300">{signedIn ? 'You can favorite products now.' : 'Sign in to save favorites.'}</p>
-        </div>
-      </div>
-
       <div className="mt-6">
         <ProductFiltersBar filters={filters} onChange={updateFilters} />
       </div>
@@ -98,9 +89,9 @@ export function ProductListPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-center">
-            <button className="rounded-full border border-white/10 px-4 py-2 text-sm text-white disabled:opacity-40" onClick={() => goToPage(Math.max(1, page - 1))} disabled={page <= 1}>Previous</button>
+            <button className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:border-sky-300/40 hover:bg-sky-300/10 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => goToPage(Math.max(1, page - 1))} disabled={page <= 1}>Previous</button>
             <span className="text-sm text-slate-300">Page {data.page} of {data.totalPages}</span>
-            <button className="rounded-full border border-white/10 px-4 py-2 text-sm text-white disabled:opacity-40" onClick={() => goToPage(Math.min(data.totalPages, page + 1))} disabled={page >= data.totalPages}>Next</button>
+            <button className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white hover:border-sky-300/40 hover:bg-sky-300/10 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => goToPage(Math.min(data.totalPages, page + 1))} disabled={page >= data.totalPages}>Next</button>
           </div>
         </>
       )}

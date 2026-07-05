@@ -14,6 +14,7 @@ export function ProductDetailPage() {
   const [error, setError] = useState<'not-found' | 'error' | null>(null)
   const [favorite, setFavorite] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [activeImage, setActiveImage] = useState<string | null>(null)
   const location = useLocation()
   const from = location.state?.from
 
@@ -27,7 +28,10 @@ export function ProductDetailPage() {
 
     getProductById(id)
       .then((result) => {
-        if (!cancelled) setProduct(result)
+        if (!cancelled) {
+          setProduct(result)
+          setActiveImage(result.thumbnail)
+        }
       })
       .catch((err) => {
         if (cancelled) return
@@ -87,7 +91,7 @@ export function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <button onClick={() => navigate(from ?? '/')} className="text-sm text-emerald-300 hover:underline">&larr; Back to products</button>
+      <button onClick={() => navigate(from ?? '/')} className="text-lg font-medium text-sky-300 hover:text-sky-200">&larr; Back</button>
 
       {loading && <p className="mt-4 text-slate-300">Loading product...</p>}
 
@@ -97,26 +101,35 @@ export function ProductDetailPage() {
 
       {!loading && !error && product && (
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div>
-            <img src={product.thumbnail} alt={product.title} className="w-full rounded-3xl object-cover" />
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-3 shadow-2xl shadow-black/20">
+            <div className="overflow-hidden rounded-2xl">
+              <img src={activeImage ?? product.thumbnail} alt={product.title} className="aspect-square w-full object-cover" />
+            </div>
             {product.images.length > 1 && (
-              <div className="mt-3 flex gap-2 overflow-x-auto">
+              <div className="mt-3 grid grid-cols-4 gap-2">
                 {product.images.map((img) => (
-                  <img key={img} src={img} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                  <button
+                    key={img}
+                    className={`overflow-hidden rounded-xl border ${activeImage === img ? 'border-sky-300 ring-2 ring-sky-300/25' : 'border-white/10 hover:border-white/20'}`}
+                    onClick={() => setActiveImage(img)}
+                    type="button"
+                  >
+                    <img src={img} alt="" className="h-20 w-full object-cover" />
+                  </button>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20">
             <h1 className="text-3xl font-semibold text-white">{product.title}</h1>
-            <p className="text-sm text-slate-300">{product.brand} ? {product.category}</p>
-            <p className="text-2xl font-bold text-emerald-300">${product.price.toFixed(2)}</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">{product.category}</p>
+            <p className="text-2xl font-bold text-sky-300">${product.price.toFixed(2)}</p>
             <p className="text-sm text-slate-300">Rating: {product.rating} / 5</p>
             <p className="text-sm text-slate-300">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</p>
             <p className="text-slate-200">{product.description}</p>
             <button
-              className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 disabled:opacity-50"
+              className="mt-2 rounded-full bg-gradient-to-r from-sky-300 to-cyan-200 px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               onClick={toggleFavorite}
               disabled={saving}
             >
