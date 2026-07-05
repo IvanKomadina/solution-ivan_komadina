@@ -22,8 +22,6 @@ git clone https://github.com/IvanKomadina/solution-ivan_komadina.git
 cd solution-ivan_komadina
 ```
 
-Replace `<repository-url>` with the Git URL for this project.
-
 ## Prerequisites
 
 Make sure you have the following installed:
