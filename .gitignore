@@ -7,6 +7,8 @@ obj/
 appsettings.Development.json
 *.env
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 
