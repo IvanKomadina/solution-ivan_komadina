@@ -115,7 +115,7 @@ export function ProductFiltersBar({ filters, onChange }: Props) {
 
         {hasActiveFilters && (
           <button
-            className="inline-flex items-center justify-center self-center rounded-full border border-sky-100 bg-sky-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-sky-200 hover:bg-sky-100 hover:text-slate-900 lg:self-end"
+            className="inline-flex items-center justify-center self-center rounded-full border border-sky-100 bg-sky-100 px-4 py-2 text-sm font-medium text-slate-700 hover:border-sky-200 hover:bg-sky-100 hover:text-slate-900 lg:self-end"
             onClick={() => {
               setMinPriceInput('')
               setMaxPriceInput('')

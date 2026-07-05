@@ -46,9 +46,8 @@ export function ProductListPage() {
     return () => {
       cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, filters.category, filters.minPrice, filters.maxPrice, filters.searchTerm])
-  
+
   function updateFilters(newFilters: ProductFilters) {
     const params = new URLSearchParams()
     params.set('page', '1')
